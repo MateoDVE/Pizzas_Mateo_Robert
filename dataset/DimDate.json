@@ -1,0 +1,43 @@
+{
+	"name": "DimDate",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_pizza",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "DB/DW"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "date_id",
+				"type": "date"
+			},
+			{
+				"name": "day",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "month",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "year",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "weekday",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DimDate"
+		}
+	}
+}
