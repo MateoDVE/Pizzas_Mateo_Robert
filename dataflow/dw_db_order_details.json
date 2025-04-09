@@ -1,0 +1,67 @@
+{
+	"name": "dw_db_order_details",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "order_details_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Order_details",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          order_details_id as string,",
+				"          order_id as string,",
+				"          pizza_id as string,",
+				"          quantity as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          order_details_id as integer,",
+				"          order_id as integer,",
+				"          date as date,",
+				"          time as timestamp,",
+				"          pizza_id as string,",
+				"          pizza_type_id as string,",
+				"          pizza_name as string,",
+				"          category as string,",
+				"          size as string,",
+				"          price as decimal(6,2),",
+				"          quantity as integer,",
+				"          total_price as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          order_details_id,",
+				"          order_id,",
+				"          pizza_id",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
