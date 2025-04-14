@@ -1,12 +1,15 @@
 {
-	"name": "dw_db_order_details",
+	"name": "dim_pizza",
 	"properties": {
+		"folder": {
+			"name": "DW"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "order_details_csv",
+						"referenceName": "pizza_csv",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -15,30 +18,40 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "order_details",
+						"referenceName": "dim_pizza",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "sort1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
-				"          order_details_id as integer,",
-				"          order_id as integer,",
 				"          pizza_id as string,",
-				"          quantity as integer",
+				"          pizza_type_id as string,",
+				"          size as string,",
+				"          price as double",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 sink(allowSchemaDrift: true,",
+				"source1 sort(asc(pizza_id, true)) ~> sort1",
+				"sort1 aggregate(groupBy(pizza_id),",
+				"     each(match(name != \"pizza_id\"), $$ = first($$))) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          order_details_id as integer,",
-				"          order_id as integer,",
 				"          pizza_id as string,",
-				"          quantity as integer",
+				"          pizza_type_id as string,",
+				"          size as string,",
+				"          base_price as double",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -49,10 +62,10 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          order_details_id,",
-				"          order_id,",
 				"          pizza_id,",
-				"          quantity",
+				"          pizza_type_id,",
+				"          size,",
+				"          base_price = price",
 				"     )) ~> sink1"
 			]
 		}

@@ -1,12 +1,15 @@
 {
-	"name": "dw_db_order_details",
+	"name": "orderfacts",
 	"properties": {
+		"folder": {
+			"name": "DW"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "order_details_csv",
+						"referenceName": "order_details",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -15,28 +18,45 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "order_details",
+						"referenceName": "order_facts",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "sort1"
+				},
+				{
+					"name": "cast1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
-				"          order_details_id as integer,",
 				"          order_id as integer,",
 				"          pizza_id as string,",
 				"          quantity as integer",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 sink(allowSchemaDrift: true,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select distinct order_id, pizza_id, quantity from [dbo].[OrderDetails]',",
+				"     format: 'query') ~> source1",
+				"cast1 sort(asc(order_id, true)) ~> sort1",
+				"source1 cast(output(",
+				"          order_id as string",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"sort1 aggregate(groupBy(order_id),",
+				"     each(match(name != \"order_id\"), $$ = first($$))) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          order_details_id as integer,",
-				"          order_id as integer,",
+				"          order_id as string,",
 				"          pizza_id as string,",
 				"          quantity as integer",
 				"     ),",
@@ -49,7 +69,6 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          order_details_id,",
 				"          order_id,",
 				"          pizza_id,",
 				"          quantity",
